@@ -56,7 +56,6 @@ def create_view(app,user_datastore):
 #SERVICES,PROFESSIONAL,SERVICEREQUESTS API
 
     @app.route('/api/services',methods={'GET'})
-    @cache.cached(timeout=60)
     def get_services():
         services = Service.query.all()
         service_list = [{
@@ -82,21 +81,17 @@ def create_view(app,user_datastore):
         
 
     @app.route('/api/professionals',methods=['GET'])
-    @cache.cached(timeout=60)
     def get_professionals():
-        print("Fetching from database...") 
         professionals = [professional.to_dict() for professional in Professional.query.all()]
         return jsonify({"professionals":professionals})
         
 
     @app.route('/api/servicerequests',methods=['GET'])
-    @cache.cached(timeout=60)
     def get_service_requests():
         service_requests = [service_request.to_dict() for service_request in ServiceRequest.query.all()]
         return jsonify({"service_requests":service_requests})
         
     @app.route('/api/customers',methods=['GET'])
-    @cache.cached(timeout=60)
     def get_customers():
         customers = [customer.to_dict() for customer in Customer.query.all()]
         return jsonify({"customers":customers})
@@ -123,7 +118,6 @@ def create_view(app,user_datastore):
     
    
     @app.route('/api/admin/search', methods=['GET'])
-    @cache.memoize(timeout=180)
     @admin_required
     def search():
         parameter = request.args.get('type')
@@ -204,7 +198,6 @@ def create_view(app,user_datastore):
         new_service = Service(service_name = name, description = description, base_price = base_price)
         db.session.add(new_service)
         db.session.commit()
-        cache.delete_memoized(get_services)
         return jsonify({"message":'Service added succesfully.','service': new_service.to_dict()}),201
 
     
@@ -303,8 +296,6 @@ def create_view(app,user_datastore):
         service.base_price = base_price
         service.description = description
         db.session.commit()
-        cache.delete_memoized(get_services)
-        cache.delete_memoized(admin_service,service_id)
         return  jsonify({"message":'Service updated succefully','service':service.to_dict()}), 200
 
     @app.route('/api/admin/service/<int:service_id>', methods = ['DELETE'])
@@ -322,8 +313,6 @@ def create_view(app,user_datastore):
             db.session.delete(request)
         db.session.delete(service)
         db.session.commit()
-        cache.delete_memoized(get_services)
-        cache.delete_memoized(admin_service,service_id)
         return jsonify({"message":"Service deleted succesfully"}),200
 
     @app.route('/api/admin/professionals/<int:professional_id>/approve',methods = ['POST'])
@@ -335,19 +324,14 @@ def create_view(app,user_datastore):
         professional.is_approved = True
         professional.action = 'Approved'
         db.session.commit()
-        cache.delete_memoized(get_professionals)
-        cache.delete_memoized(admin_professional,professional_id)
         return jsonify({"message":'Professional approved succesfully','professional':professional.to_dict()}),200
 
     @app.route('/api/admin/professionals/<int:professional_id>/reject', methods=['POST'])
     @admin_required
     def admin_professional_reject(professional_id):
-        
         professional = Professional.query.get(professional_id)
         if not professional:
            return jsonify({"error":'Professional not found'})
-        cache.delete_memoized(get_professionals)
-        cache.delete_memoized(admin_professional,professional_id)
         return jsonify({"message":'Professional rejected successfully','professional': professional.to_dict()}),200
 
     @app.route('/api/admin/professionals/<int:professional_id>/delete',methods=['DELETE'])
@@ -364,8 +348,7 @@ def create_view(app,user_datastore):
             db.session.delete(request)
         db.session.delete(professional)
         db.session.commit()
-        cache.delete_memoized(get_professionals)
-        cache.delete_memoized(admin_professional,professional_id)
+
         return jsonify({"message":"Professional deleted successfully"}),200
         
     @app.route('/api/admin/dashboard/professional/<int:professional_id>/unblock',methods=['POST'])
@@ -376,8 +359,7 @@ def create_view(app,user_datastore):
             return jsonify({"error",'Professional not found'})
         professional.action = 'None'
         db.session.commit()
-        cache.delete_memoized(get_professionals)
-        cache.delete_memoized(admin_professional,professional_id)
+
         return jsonify({"message":'Professional unblocked successfully','professional_id':professional_id}),200
         
     @app.route('/api/admin/dashboard/professional/<int:professional_id>/block',methods=['POST'])
@@ -388,8 +370,7 @@ def create_view(app,user_datastore):
             return jsonify({"error",'Professional not found'})
         professional.action = 'Rejected'
         db.session.commit()
-        cache.delete_memoized(get_professionals)
-        cache.delete_memoized(admin_professional,professional_id)
+
         return jsonify({"message":'Professional Blocked successfully','professional_id':professional_id}),200
 
 
@@ -401,8 +382,7 @@ def create_view(app,user_datastore):
             return jsonify({"error",'Customer not found'})
         customer.action = 'Blocked'
         db.session.commit()
-        cache.delete_memoized(get_customers)
-        cache.delete_memoized(admin_customers,customer_id)
+
 
         return jsonify({"message":'Customer blocked successfully'}),200
 
@@ -415,8 +395,7 @@ def create_view(app,user_datastore):
             return jsonify({"error",'Customer not found'})
         customer.action = 'None'
         db.session.commit()
-        cache.delete_memoized(get_customers)
-        cache.delete_memoized(admin_customers,customer_id)
+    
         return jsonify({"message":'Customer Unblocked successfully'}),200
 
 
@@ -494,7 +473,6 @@ def create_view(app,user_datastore):
     
     @app.route('/api/customer/dashboard',methods = ['GET'])
     @customer_required
-    @cache.cached(timeout=600)
     def customer_dashboard():
         user = User.query.get(session['user_id'])
         customer = user.customer_details
@@ -529,7 +507,6 @@ def create_view(app,user_datastore):
     
     @app.route('/api/customer/dashboard/<service_name>',methods=['GET'])
     @customer_required
-    @cache.cached(timeout=900)
     def service_details(service_name):
         service = Service.query.filter_by(service_name=service_name).first()
         if not service:
@@ -634,7 +611,6 @@ def create_view(app,user_datastore):
     
     
     @app.route('/api/customer/search',methods=['GET'])
-    @cache.memoize(timeout=180)
     @customer_required
     def customer_search():
         parameter = request.args.get('type')
@@ -783,7 +759,7 @@ def create_view(app,user_datastore):
         session['professional_id'] = professional.professional_id
         return jsonify({"message":"Login successfull"}),200
 
-    @cache.cached(timeout=300)
+
     @app.route('/api/professional/dashboard/today',methods=['GET'])
     @professional_required
     def professional_today_services():
@@ -814,7 +790,6 @@ def create_view(app,user_datastore):
 
     @app.route('/api/professional/dashboard/closed',methods=['GET'])
     @professional_required
-    @cache.cached(timeout=300)
     def professional_closed_services():
         professional_id = session.get('professional_id')
 
@@ -844,7 +819,6 @@ def create_view(app,user_datastore):
     
     @app.route('/api/professional/dashboard/requested',methods=['GET'])
     @professional_required
-    @cache.cached(timeout=300)
     def professional_pending_services():
         professional_id = session.get('professional_id')
 
@@ -866,7 +840,6 @@ def create_view(app,user_datastore):
     
     @app.route('/api/professional/dashboard/accepted',methods=['GET'])
     @professional_required
-    @cache.cached(timeout=300)
     def professional_ongoing_services():
         professional_id = session.get('professional_id')
 
@@ -896,8 +869,6 @@ def create_view(app,user_datastore):
         
         service_request.service_status = 'Accepted'
         db.session.commit()
-        cache.delete_memoized(professional_today_services)
-        cache.delete_memoized(generate_professional_summary)
         return jsonify({"message":"Service request accepted"}),200
 
     @app.route('/api/professional/dashboard/reject/<int:id>',methods=['PUT'])
@@ -910,13 +881,10 @@ def create_view(app,user_datastore):
         
         service_request.service_status = 'Rejected'
         db.session.commit()
-        cache.delete_memoized(professional_today_services)
-        cache.delete_memoized(generate_professional_summary)
         return jsonify({"message":"Service request rejected"}),200
 
 
     @app.route('/api/professional/search', methods=['GET'])
-    @cache.memoize(timeout=300)
     @professional_required
     def professional_search():
         parameter = request.args.get('type')
@@ -949,6 +917,7 @@ def create_view(app,user_datastore):
                     **customer.to_dict(),
                     'service_status':[
                          service_request.service_status for service_request in customer.service_requests
+                         if service_request.professional_id == session['professional_id']
                 ]
 
                 }
@@ -1026,11 +995,11 @@ def create_view(app,user_datastore):
     @professional_required
     def professional_logout():
         session.pop('professional_id',None)
+        cache.delete_memoized(professional_search)
         return jsonify({"message":"Logout successful"}),200
     
 
     @app.route('/api/admin_summary')
-    @cache.cached(timeout=3600)
     @admin_required
     def generate_admin_summary():
         base_url = "http://127.0.0.1:5000"
@@ -1097,7 +1066,6 @@ def create_view(app,user_datastore):
 
     @app.route('/api/customer_summary')
     @customer_required
-    @cache.cached(timeout=3600)
     def generate_customer_summary():
         user = User.query.get(session['user_id'])
         customer = user.customer_details
@@ -1144,7 +1112,6 @@ def create_view(app,user_datastore):
 
 
     @app.route('/api/professional_summary')
-    @cache.cached(timeout=3600)
     @professional_required
     def generate_professional_summary():
         professional = Professional.query.get(session['professional_id'])
