@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 import backend.views
 import backend.models
-from backend.extentions import db,security
+from backend.extentions import db,security,cache
 from flask_security import hash_password
 from backend.celery_init import celery_init_app
 from celery.schedules import crontab
@@ -47,8 +47,11 @@ def create_app():
    app.config['MAIL_USE_TLS'] = True
    app.config['MAIL_USERNAME'] = 'your-email@gmail.com'
    app.config['MAIL_PASSWORD'] = 'your-email-password'
-   
 
+   app.config['CACHE_TYPE'] ='redis'
+   app.config['CACHE_REDIS_URL'] = 'redis://localhost:6379/0'
+   
+   
    UPLOAD_FOLDER = 'uploads'
    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
    if not os.path.exists(UPLOAD_FOLDER):
@@ -67,7 +70,8 @@ def create_app():
    security.init_app(app, user_datastore, register_blueprint=False)
 
    db.init_app(app)
-
+   cache.init_app(app)
+   
    create_database(app)
 
    backend.views.create_view(app,user_datastore)
