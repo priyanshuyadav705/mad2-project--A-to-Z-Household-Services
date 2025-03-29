@@ -661,17 +661,13 @@ def create_view(app,user_datastore):
         return jsonify({"message":"Logout successful"}),200
 
 #Professionals API
-
     @app.route('/api/professional/register', methods=['POST'])
-    def professional_register():
-        if 'file' not in request.files:
-            return jsonify({"error": "No file uploaded"}), 400
-    
+    def professional_register(): 
         file = request.files['file']
         email = request.form.get('email')
         password = request.form.get('password') 
+        service = request.form.get('service')
         name = request.form.get('name')
-        service = request.form.get('service')  # This should be a string
         new_service = request.form.get('newService')
         service_description = request.form.get('service_description')
         experience = request.form.get('experience')
@@ -679,33 +675,19 @@ def create_view(app,user_datastore):
         pincode = request.form.get('pincode')
         phonenumber = request.form.get('phonenumber')
 
-                
-        print(f"Received service: {service}")  # Debugging
-        print(f"Received new_service: {new_service}")  # Debugging
-
-        if service == "Others" and new_service:
+        if service == "Others" and new_services:
             service_names = new_service
-                
-
-    
-        if not all([email, password, name, service, experience, address, pincode, phonenumber]):
-            return jsonify({"error": "Missing required fields"}), 400
-    
-        # Ensure uploads folder exists
         if not os.path.exists(app.config['UPLOAD_FOLDER']):
             os.makedirs(app.config['UPLOAD_FOLDER'])
-    
-        # Save file
+        
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-    
+
         service_names = []
         service_names = [service] if service != "Others" else [new_service]
 
         existing_services = {s.service_name: s for s in Service.query.filter(Service.service_name.in_(service_names)).all()}
-    
-        # 🔹 Create new services if they don't exist
         new_services = []
         for service_name in service_names:
             if service_name not in existing_services:
@@ -713,28 +695,26 @@ def create_view(app,user_datastore):
                 db.session.add(new_service_obj)
                 new_services.append(new_service_obj)
             else:
-                 new_services.append(existing_services[service_name])
-                
-        hashed_password = generate_password_hash(password)
-        
-        new_professional = Professional(
-            email=email,
-            password=hashed_password,  # Hash password before saving
-            name=name,
-            service_description=service_description,
-            experience=int(experience),
-            address=address,
-            pincode=pincode,
-            phonenumber=phonenumber,
-            file=file_path,
-        )
-    
-        # 🔹 Assign services to the professional
-        new_professional.services = new_services
-    
-        db.session.add(new_professional)
-        db.session.commit()
-        return jsonify({"message":"User successfully Signed Up"}),201
+                  new_services.append(existing_services[service_name])
+            
+            hashed_password = generate_password_hash(password)
+
+            new_professional = Professional(
+                email=email,
+                password=hashed_password,
+                name=name,
+                service_description=service_description,
+                experience=int(experience),
+                address=address,
+                pincode=pincode,
+                phonenumber=phonenumber,
+                file=file_path,
+            )
+            
+            new_professional.services = new_services
+            db.session.add(new_professional)
+            db.session.commit()
+            return jsonify({"message":"Professional successfully Signed up"}),201
 
     @app.route('/api/professional/login',methods=['POST'])
     def professional_login():

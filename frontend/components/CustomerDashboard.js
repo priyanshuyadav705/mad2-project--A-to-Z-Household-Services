@@ -7,7 +7,7 @@ export default {
     template:`
   <div>
      <CustomerNav2 :serviceName="selectedService" v-if="selectedService" />
-     <h2 class=text-center>Welcome to the Customer Dashboard, {{ user.name }}</h2>
+     <h2 class=text-center>Welcome to the Customer Dashboard, {{ user? user.name : 'Guest'}}</h2>
 
     <p>
       <router-link to="/customer/profile/edit" class="profile">
@@ -27,38 +27,38 @@ export default {
 
     <div v-if="service_name" class="service_information">
         <h3 class = "text-muted">Best {{ service_name }} services</h3>
-            <div v-if="filteredServices.length > 0">
-                <p><strong>Service description | AVg. Rating | Base price |  Created on</strong></p>
+                <p><strong>sr.no | Service description | AVg. Rating | Base price |  Created on</strong></p>
                    <div v-for = "(service,index) in filteredServices" :key="index">
-                        <p>
-                           {{ index + 1}}.
-                           {{ service.service_description }},
-                           {{ 'N/a' }},
-                           {{ service.base_price }} ,
-                           {{ service.created_at }},
-                            <strong> No professionals available yet.</strong>
-                        </p>
-                        <div v-if = "service.professionals && service.professionals?.length > 0">
-                            <div v-for = "(professional, index) in service.professionals" :key="index">
-                                <p>
-                                    {{ index + 1}}.
-                                    {{ professional.service_description}},
-                                    {{ professional_avg_rating[professional.professional_id] || 'N/a' }},
-                                    {{ service.base_price }},
-                                    {{ service.created_at }},  
-                                    <button
-                                       @click="handleBooking(professional.id, service.id)" 
-                                       class="btn btn-primary">
-                                        Book
-                                    </button>
-                                </p>
-                            </div>
-                        </div>
+                       <div v-if = "service.professionals && service.professionals?.length > 0">
+                          <div v-for = "(professional, index) in service.professionals" :key="index">
+                              <p>
+                                {{ index + 1}}.
+                                {{ professional.service_description}},
+                                {{ professional_avg_rating[professional.professional_id] || 'N/a' }},
+                                {{ service.base_price }},
+                                {{ service.created_at }},  
+                                <button
+                                    @click="handleBooking(professional.id, service.id)" 
+                                    class="btn btn-primary">
+                                     Book
+                                </button>
+                              </p>
+                          </div>
+                       </div>
+                       <div v-else>
+                           <p>
+                              {{ index + 1}}.
+                              {{ service.service_description }},
+                              {{ 'N/a' }},
+                              {{ service.base_price }} ,
+                              {{ service.created_at }},
+                               <strong> No professionals available yet.</strong>
+                           </p>
+              
+                       </div>
                    </div>
-            </div>
-            <div v-else>
-                 <p> No services found for {{ service_name }} yet, try sometime later </p>
-            </div>
+            
+
     </div>
     <br>
     <br>

@@ -27,7 +27,7 @@ export default {
                 <tr v-for="service in services" :key="service.id">
                     <td><router-link :to = "'/admin/service/details/'+ service.id">{{service.id}}</router-link></td>
                     <td>{{ service.service_name }}</td>
-                    <td>{{ service.base_price }}</td>
+                    <td>{{ service.base_price || 'Not available' }}</td>
                     <td> 
                         <router-link :to = "'/admin/services/edit/' + service.id" class="btn btn-primary">
                             <i class = "fas fa-edit fa-xs"></i> Edit

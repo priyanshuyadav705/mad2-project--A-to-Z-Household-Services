@@ -13,7 +13,7 @@ export default {
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Experience</th>
+                    <th>Experience(years)</th>
                     <th>Service Name</th>
                     <th>Action</th>
                     <th>Average Rating</th>
@@ -28,7 +28,7 @@ export default {
                         {{ professional.service_name[0] }}
                     </td>
                     <td> {{ professional.action }}</td>
-                    <td> {{ professional.rating }}</td>
+                    <td> {{ professional.rating || 'N/A' }}</td>
                     <td> 
                         <a :href="professional.pdf" target="_blank>">Download PDF</a>
                        

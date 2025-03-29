@@ -28,7 +28,7 @@ export default {
                                 <td>{{ service.id}}</td>
                                 <td>{{ service.name }}</td>
                                 <td>{{ service.base_price || 'N/A'}}</td>
-                                <td>{{ service.service_description }}</td>
+                                <td>{{ service.description }}</td>
                                 <td>
                                 <button
                                        v-for="professionals in service.professionals" :key="professionals.id"

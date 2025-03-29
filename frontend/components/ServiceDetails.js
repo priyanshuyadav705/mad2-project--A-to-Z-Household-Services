@@ -22,7 +22,7 @@ export default {
             <tbody>
                     <td>{{ service.id }}
                     <td>{{ service.service_name }}</td>
-                    <td>{{ service.base_price }}</td>
+                    <td>{{ service.base_price || 'N/A'}}</td>
                     <td>
                        <div v-if="service.professionals && service.professionals.length > 0">
                            <ul>
@@ -35,7 +35,7 @@ export default {
                             No professional assigned yet
                        </div>
                     </td>
-                    <td>{{ service.service_description}}</td>
+                    <td>{{ service.service_description || 'N/A'}}</td>
                     <td>{{ service.created_at }}</td>
             </tbody>
          </table>
