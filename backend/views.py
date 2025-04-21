@@ -305,8 +305,8 @@ def create_view(app,user_datastore):
         if not service:
             return jsonify({"error":"Service not found"}),404
 
-        for professional in service.professionals:
-            service.professionals.remove(professional)
+        service.professionals.clear()
+      
         for request in service.service_requests:
             if request.review:
                 db.session.delete(request.review)
