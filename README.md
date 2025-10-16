@@ -87,19 +87,19 @@ The project is divided into five main components:
 ## 🔧 Setup and Installation
 
 1. Clone the repository
-git clone https://github.com/<your-username>/A-Z-Household-Services.git
+git clone https://github.com/priyanshuyadav705/A-Z-Household-Services.git
 cd A-Z-Household-Services
-2. Create a Virtual Environment
+3. Create a Virtual Environment
 bash
 Copy code
 python -m venv venv
 source venv/bin/activate  # For macOS/Linux
 venv\Scripts\activate     # For Windows
-3. Install Dependencies
+4. Install Dependencies
 bash
 Copy code
 pip install -r requirements.txt
-4. Run the Application
+5. Run the Application
 bash
 Copy code
 python main.py
